@@ -6,6 +6,7 @@
 #     "opentelemetry-instrumentation>=0.60b1",
 #     "opentelemetry-instrumentation-system-metrics>=0.60b1",
 #     "opentelemetry-sdk>=1.39.1",
+#     "prometheus-client>=0.15.0",
 #     "storage-backend[s3]",
 # ]
 #
@@ -26,6 +27,7 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import (
     BatchSpanProcessor,
 )
+from prometheus_client import start_http_server
 from pydantic import computed_field
 from pydantic_settings import BaseSettings
 
@@ -48,6 +50,9 @@ meter = metrics.get_meter("storage_backend")
 
 metrics.set_meter_provider(MeterProvider(metric_readers=[PrometheusMetricReader()]))
 SystemMetricsInstrumentor().instrument()
+
+
+start_http_server(8000)
 
 
 class Settings(BaseSettings):
@@ -175,3 +180,5 @@ if __name__ == "__main__":
             task = download_images(images, input_storage, output_storage)
             task = loop.create_task(task)
             loop.run_until_complete(asyncio.wait([task]))
+
+    input("Done. Press Enter to exit...")
