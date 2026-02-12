@@ -11,6 +11,10 @@ from storage_backend.abc import StorageBackend
 _tracer = trace.get_tracer("storage_backend")
 _meter = metrics.get_meter("storage_backend")
 
+_put_latency = _meter.create_histogram(
+    "storage.http.put.duration",
+    unit="s",
+)
 _get_latency = _meter.create_histogram(
     "storage.http.get.duration",
     unit="s",
@@ -37,7 +41,22 @@ class HTTPStorage(StorageBackend):
         Raises:
             RuntimeError: Always raised since HTTP storage is read-only.
         """
-        raise RuntimeError("HTTP backend is read-only")
+        start = time.monotonic()
+        url = f"{self.base_url}/{key}"
+        with _tracer.start_as_current_span(
+            "storage.http.put",
+            attributes={
+                "storage.key": key,
+                "storage.base_url": str(self.base_url),
+            },
+        ):
+            loop = asyncio.get_running_loop()
+            async with self._semaphore:
+                r = await loop.run_in_executor(self._executor, self.client.post, url)
+            r.raise_for_status()
+        _put_latency.record(
+            time.monotonic() - start, attributes={"operation": "storage.http.put"}
+        )
 
     async def get(self, key: str) -> bytes:
         """Download a file from HTTP storage.
