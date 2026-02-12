@@ -1,0 +1,11 @@
+{
+  "images_source": {
+    "backend": "s3",
+    "bucket": "my-bucket",
+    "prefix": ""
+  },
+  "images_destination": {
+    "backend": "local",
+    "root_dir": "downloads"
+  }
+}

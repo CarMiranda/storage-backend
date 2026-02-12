@@ -1,0 +1,84 @@
+[project]
+name = "storage-backend"
+version = "0.1.0"
+description = "A lightweight storage backend interface."
+authors = [{ name = "Carlos Miranda", email = "carlos.miranda@proton.me" }]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "opentelemetry-api>=1.39.1",
+  "pydantic>=2.12.5",
+  "pydantic-settings>=2.12.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.10.2,<0.11.0"]
+build-backend = "uv_build"
+
+[project.optional-dependencies]
+s3 = ["boto3>=1.40.61"]
+gcs = ["google-cloud-storage>=3.8.0"]
+http = ["httpx>=0.28.1"]
+
+[dependency-groups]
+dev = ["ruff >=0.5.2", "pre-commit >=3.7.1", "detect-secrets >=1.5.0"]
+docs = [
+  "mkdocs>=1.6.0",
+  "mkdocs-material>=9.5.31",
+  "mkdocs-gen-files>=0.5.0",
+  "mkdocs-section-index>=0.3.9",
+  "mkdocstrings-python>=1.10.8",
+  "mkdocs-literate-nav>=0.6.1",
+  "mkdocs-render-swagger-plugin>=0.1.2",
+]
+test = ["pytest>=8.2.2", "coverage>=7.6.0", "pytest-order>=1.2.1"]
+
+[tool.pytest.ini_options]
+source = "src/storage_backend"
+markers = ["disable_autouse", "gpu"]
+addopts = ["-ra -p no:warnings"]
+testpaths = ["tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "D"]
+ignore = ["D100", "D104", "D105", "D107"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.coverage.run]
+source = ["src/storage_backend"]
+branch = true
+omit = [
+  # Omit tests files
+  "*tests*",
+  #Omit main files
+  "*main*",
+  #Omit log and exception files
+  "*log*",
+  "*scripts*",
+  "*exception*",
+  "*_version.py*",
+]
+
+[tool.coverage.report]
+# Regexes for lines to exclude from consideration
+exclude_also = [
+  # Have to re-enable the standard pragma
+  "pragma: no cover",
+  # Don't complain about missing debug-only code:
+  "def __repr__",
+  "if self\\.debug",
+  # Don't complain if tests don't hit defensive assertion code:
+  "raise AssertionError",
+  "raise NotImplementedError",
+  # Don't complain if non-runnable code isn't run:
+  "if 0:",
+  "if __name__ == .__main__.:",
+  # Don't complain about abstract methods, they aren't run:
+  "@(abc\\.)?abstractmethod",
+]
+ignore_errors = true
+
+[tool.coverage.html]
+directory = "coverage_html_report"
