@@ -72,7 +72,7 @@ class S3Storage(StorageBackend):
         """
         start = time.monotonic()
         with _tracer.start_as_current_span(
-            "storage.get",
+            "storage.s3.get",
             attributes={
                 "storage.key": key,
                 "storage.bucket": str(self.bucket),
